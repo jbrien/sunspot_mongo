@@ -3,6 +3,7 @@ namespace :sunspot do
     desc "Reindex all models that include Sunspot::Mongo and are located in your application's models directory."
     task :reindex, [:models] => :environment do |t, args|
       require 'retryable'
+      include Retryable
       sunspot_models = if args[:models]
          args[:models].split('+').map{|m| m.constantize}
       else
