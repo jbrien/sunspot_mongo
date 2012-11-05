@@ -2,6 +2,7 @@ namespace :sunspot do
   namespace :mongo do
     desc "Reindex all models that include Sunspot::Mongo and are located in your application's models directory."
     task :reindex, [:models] => :environment do |t, args|
+      require 'retryable'
       sunspot_models = if args[:models]
          args[:models].split('+').map{|m| m.constantize}
       else
@@ -12,10 +13,17 @@ namespace :sunspot do
 
       sunspot_models.each do |model|
         model.remove_all_from_index!
-        Sunspot.commit
+        # Sunspot.commit
         puts "reindexing #{model}"
-        model.all.each(&:index)
-        Sunspot.commit
+        model.all.each do |m|
+          retryable on: RSolr::Error::Http, times: 3, sleep: 1 do
+            m.index
+          end
+        end
+        
+        retryable on: RSolr::Error::Http, times: 3, sleep: 1 do
+          Sunspot.commit
+        end
       end
     end
   end
