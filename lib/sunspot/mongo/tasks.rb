@@ -16,12 +16,12 @@ namespace :sunspot do
         # Sunspot.commit
         puts "reindexing #{model}"
         model.all.each do |m|
-          retryable on: RSolr::Error::Http, times: 3, sleep: 1 do
+          retryable on: RSolr::Error::Http, times: 5, sleep: 5 do
             m.index
           end
         end
         
-        retryable on: RSolr::Error::Http, times: 3, sleep: 1 do
+        retryable on: RSolr::Error::Http, times: 5, sleep: 5 do
           Sunspot.commit
         end
       end
