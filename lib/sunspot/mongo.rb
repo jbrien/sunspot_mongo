@@ -6,19 +6,8 @@ module Sunspot
     def self.included(base)
       base.class_eval do
         extend Sunspot::Rails::Searchable::ActsAsMethods
-        extend Sunspot::Mongo::Finders
         Sunspot::Adapters::DataAccessor.register(DataAccessor, base)
         Sunspot::Adapters::InstanceAdapter.register(InstanceAdapter, base)
-      end
-    end
-
-    module Finders
-      def sunspot_find(id)
-        find(id)
-      end
-
-      def sunspot_find_all(ids)
-        find(ids)
       end
     end
 
@@ -29,12 +18,14 @@ module Sunspot
     end
 
     class DataAccessor < Sunspot::Adapters::DataAccessor
+      attr_accessor :include
+
       def load(id)
-        @clazz.sunspot_find(id)
+        @clazz.includes((@include || [])).find(id)
       end
 
       def load_all(ids)
-        @clazz.sunspot_find_all(ids)
+        @clazz.includes((@include || [])).find(ids)
       end
     end
   end
