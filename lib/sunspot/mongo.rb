@@ -25,7 +25,7 @@ module Sunspot
       end
 
       def load_all(ids)
-        @clazz.includes((@include || [])).find(ids)
+        @clazz.includes((@include || [])).where(:_id.in => ids).to_a
       end
     end
   end
